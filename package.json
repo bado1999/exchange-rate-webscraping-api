@@ -11,7 +11,6 @@
   "description": "This is test",
   "type": "module",
   "dependencies": {
-    "axios": "^1.7.7",
     "puppeteer": "^23.7.0",
     "sqlite3": "^5.1.7"
   }
