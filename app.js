@@ -97,7 +97,7 @@ function getRefresher() {
   });
 }
 
-// Refresh after 1 hour
+// Refresh after 12 hour
 let refreshAfter = 12 * 60 * 60 * 1000;
 
 // Check if exchange rates can be refreshed
