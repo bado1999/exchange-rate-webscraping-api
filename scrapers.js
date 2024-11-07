@@ -62,9 +62,8 @@ async function scrapeTapTapSendRates() {
 
         if (rate) {
           exchangeRates.push({
-            fromCurrency:
-              fromCurrency.value == "FCFA" ? "XOF" : fromCurrency.value,
-            toCurrency: toCurrency.value == "FCFA" ? "XOF" : toCurrency.value,
+            fromCurrency: fromCurrency.name,
+            toCurrency: toCurrency.name,
             rate: rate,
           });
           console.log(

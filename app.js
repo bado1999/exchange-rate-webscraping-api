@@ -140,7 +140,7 @@ function setupRefresher() {
 }
 
 //Call refresh function to insert exchange rates for the first time
-//refresh();
+refresh();
 
 http
   .createServer(async (req, res) => {
