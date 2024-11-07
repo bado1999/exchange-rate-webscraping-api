@@ -98,7 +98,7 @@ function getRefresher() {
 }
 
 // Refresh after 1 hour
-let refreshAfter = 60 * 60 * 1000;
+let refreshAfter = 12 * 60 * 60 * 1000;
 
 // Check if exchange rates can be refreshed
 async function canRefresh() {
