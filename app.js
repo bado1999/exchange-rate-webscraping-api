@@ -61,6 +61,8 @@ function getRates() {
     db.all(
       `SELECT from_currency, to_currency, exchange_rate, company_name FROM exchange_rates JOIN companies ON exchange_rates.company_id = companies.company_id`,
       (err, rows) => {
+        // Close the database connection
+        closeDBConnection(db);
         if (err) {
           console.error("Error querying exchange rates:", err.message);
           reject(err); // Reject the promise on error
@@ -68,9 +70,6 @@ function getRates() {
           console.log("Rates fetched successfully");
           resolve(rows); // Resolve the promise with the data
         }
-
-        // Close the database connection
-        closeDBConnection(db);
       }
     );
   });
@@ -82,6 +81,8 @@ function getRefresher() {
 
     console.log("Fetching Refresher");
     db.all(`SELECT last_refresh FROM refresher`, (err, row) => {
+      // Close the database connection
+      closeDBConnection(db);
       if (err) {
         console.error("Error querying refresher:", err.message);
         reject(err); // Reject the promise on error
@@ -91,8 +92,6 @@ function getRefresher() {
           resolve(null);
         } else resolve(row[0].last_refresh); // Resolve the promise with the data
       }
-      // Close the database connection
-      closeDBConnection(db);
     });
   });
 }
@@ -103,7 +102,6 @@ let refreshAfter = 12 * 60 * 60 * 1000;
 // Check if exchange rates can be refreshed
 async function canRefresh() {
   const last_refresh = await getRefresher();
-  console.log("Refresher:", last_refresh);
   if (Date.now() - last_refresh >= refreshAfter) return true;
   return false;
 }
@@ -118,13 +116,14 @@ function updateRefresher() {
     } else {
       console.log("Refresher updated successfully");
     }
+
+    // Close the database connection
+    closeDBConnection(db);
   });
   stmt.finalize();
-
-  // Close the database connection
-  closeDBConnection(db);
 }
 
+//After we fetch the data for the first time we need to set the refresher
 function setupRefresher() {
   const db = connectToDB();
   const stmt = db.prepare("INSERT INTO refresher (last_refresh) VALUES (?)");
@@ -134,19 +133,20 @@ function setupRefresher() {
     } else {
       console.log("Refresher set successfully");
     }
+    closeDBConnection(db);
   });
   stmt.finalize();
-  closeDBConnection(db);
 }
 
 //Call refresh function to insert exchange rates for the first time
-refresh();
+//await refresh();
 
 http
   .createServer(async (req, res) => {
     if (req.url === "/taux/refresh") {
       res.setHeader("Content-Type", "text/plain");
       try {
+        console.log("Refreshing");
         let isRefreshable = await canRefresh();
         if (isRefreshable) {
           refresh();
@@ -165,7 +165,6 @@ http
       let rates;
       try {
         rates = await getRates();
-        console.log(rates);
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(rates));
@@ -180,4 +179,6 @@ http
       res.end("Not Found\n");
     }
   })
-  .listen(8080);
+  .listen(8080, "0.0.0.0", () => {
+    console.log("Server running on port 8080");
+  });
